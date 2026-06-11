@@ -62,7 +62,12 @@
 
             <!-- Waiting for question State -->
             <div id="voter-waiting" class="center-content hidden">
-                <div class="eye-icon-large animated-pulse"></div>
+                <svg class="voter-waiting-svg animated-pulse" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 50 C 30 20, 70 20, 90 50 C 70 80, 30 80, 10 50 Z" fill="none" stroke="currentColor" stroke-width="6" stroke-linejoin="round"/>
+                    <circle cx="50" cy="50" r="20" fill="var(--color-red)" stroke="currentColor" stroke-width="5"/>
+                    <circle cx="50" cy="50" r="8" fill="var(--color-dark)"/>
+                    <circle cx="45" cy="45" r="3" fill="var(--color-white)"/>
+                </svg>
                 <h2 class="title text-center">Warten auf den Spielleiter...</h2>
                 <p class="typewriter text-center">Die nächste Runde startet gleich. Behalte die Leinwand im Auge!</p>
             </div>
@@ -129,7 +134,12 @@
                     <!-- Voting Phase (Large Suspects Grid) -->
                     <div id="presenter-voting-phase" class="voting-phase-container">
                         <div class="voting-status-container">
-                            <div class="eye-closed-icon-small animated-shiver"></div>
+                            <svg class="status-detective-svg animated-shiver" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <line x1="65" y1="65" x2="90" y2="90" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
+                                <circle cx="45" cy="45" r="30" fill="none" stroke="currentColor" stroke-width="8"/>
+                                <path d="M25 35 A 20 20 0 0 1 55 20" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+                                <text x="45" y="58" font-family="var(--font-display)" font-size="38" font-weight="bold" fill="var(--color-red)" text-anchor="middle">?</text>
+                            </svg>
                             <div class="voting-status-text">
                                 <h3 class="typewriter text-highlight">Stimmen gehen ein...</h3>
                                 <p class="typewriter-sub">Die Ermittlungen laufen. Ergebnisse werden gleich enthüllt!</p>

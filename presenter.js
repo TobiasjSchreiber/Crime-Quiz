@@ -10,6 +10,9 @@ let presenterState = {
 let voteCounts = {};
 let qrcodeInstance = null;
 let winnerShownForQuestion = null;
+let chartAnimationTimeouts = [];
+let isTransitioning = false;
+let needsVoteUpdate = false;
 
 // Initialize Presenter Screen
 async function initPresenter() {
@@ -80,6 +83,8 @@ async function handleStateChange() {
             
             currentQuestion = qData;
             winnerShownForQuestion = null; // Reset winner show state for new question
+            isTransitioning = false;
+            needsVoteUpdate = false;
             document.getElementById('presenter-question-text').textContent = currentQuestion.text;
             
             // Render large suspects for the voting phase
@@ -144,8 +149,18 @@ async function loadVotes() {
         // Update UI counters
         document.getElementById('presenter-total-votes').textContent = totalVotes;
         
+        if (isTransitioning) {
+            needsVoteUpdate = true;
+            return;
+        }
+        
         // Render chart
         renderChart(totalVotes);
+        
+        // Update winner column if results are shown
+        if (presenterState.show_results) {
+            renderWinnerColumn();
+        }
     } catch (err) {
         console.error('Fehler beim Laden der Stimmen:', err);
     }
@@ -153,10 +168,48 @@ async function loadVotes() {
 
 // Render dynamic bar chart with retro style
 function renderChart(totalVotes, delayHeightAnimation = false) {
-    const chartContainer = document.getElementById('presenter-chart');
-    chartContainer.innerHTML = '';
+    // Cancel any pending animations
+    chartAnimationTimeouts.forEach(t => clearTimeout(t));
+    chartAnimationTimeouts = [];
     
     if (!currentQuestion) return;
+    
+    const chartContainer = document.getElementById('presenter-chart');
+    const existingColumns = chartContainer.querySelectorAll('.chart-column');
+    
+    const isSameQuestion = chartContainer.dataset.questionId === currentQuestion.id.toString();
+    
+    // Check if we can do an in-place update (must have the same question, same number of options, and delayHeightAnimation is false)
+    const canUpdateInPlace = isSameQuestion && 
+                             !delayHeightAnimation && 
+                             existingColumns.length === currentQuestion.options.length;
+                             
+    if (canUpdateInPlace) {
+        currentQuestion.options.forEach((opt, idx) => {
+            const count = voteCounts[idx] || 0;
+            const pct = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
+            const col = existingColumns[idx];
+            
+            // Update vote count label
+            const label = col.querySelector('.vote-count-label');
+            if (label) {
+                label.textContent = count;
+            }
+            
+            // Update bar height
+            const bar = col.querySelector('.bar');
+            if (bar) {
+                // Clear inline transition so it falls back to CSS transition setup
+                bar.style.transition = '';
+                bar.style.height = `${pct}%`;
+            }
+        });
+        return;
+    }
+    
+    // Fallback: full rebuild of the chart
+    chartContainer.innerHTML = '';
+    chartContainer.dataset.questionId = currentQuestion.id;
     
     currentQuestion.options.forEach((opt, idx) => {
         const count = voteCounts[idx] || 0;
@@ -190,12 +243,13 @@ function renderChart(totalVotes, delayHeightAnimation = false) {
         
         // Animate bar rising up after layout calculation
         if (!delayHeightAnimation) {
-            setTimeout(() => {
+            const tId = setTimeout(() => {
                 const bar = document.getElementById(`bar-${idx}`);
                 if (bar) {
                     bar.style.height = `${pct}%`;
                 }
             }, 100);
+            chartAnimationTimeouts.push(tId);
         }
     });
 }
@@ -260,6 +314,12 @@ function updateResultsVisibility() {
             revealPhase.classList.add('hidden');
             votingPhase.classList.remove('hidden');
         } else {
+            // Disable child animations temporarily during transition to prevent blinking/flashing
+            const largeCards = votingPhase.querySelectorAll('.presenter-suspect-card-large');
+            largeCards.forEach(card => {
+                card.style.animation = 'none';
+            });
+            
             animateTransition(revealPhase, votingPhase, 'dossier-sweep-reverse');
         }
         
@@ -274,6 +334,9 @@ function updateResultsVisibility() {
 
 // FLIP animation to transition suspect cards from grid to chart
 function performFlipAnimation() {
+    isTransitioning = true;
+    needsVoteUpdate = false;
+    
     const votingPhase = document.getElementById('presenter-voting-phase');
     const revealPhase = document.getElementById('presenter-reveal-phase');
     
@@ -446,12 +509,13 @@ function performFlipAnimation() {
         });
         
         // Trigger the height animation for the bars with a slight delay so it starts while they are already visible
-        setTimeout(() => {
+        const heightTimeoutId = setTimeout(() => {
+            const latestTotalVotes = Object.values(voteCounts).reduce((sum, val) => sum + val, 0);
             currentQuestion.options.forEach((_, idx) => {
                 const bar = document.getElementById(`bar-${idx}`);
                 if (bar) {
                     const count = voteCounts[idx] || 0;
-                    const pct = totalVotes > 0 ? (count / totalVotes) * 100 : 0;
+                    const pct = latestTotalVotes > 0 ? (count / latestTotalVotes) * 100 : 0;
                     
                     // Force a layout reflow and set inline transition to guarantee transition plays
                     bar.style.transition = 'height 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
@@ -460,6 +524,7 @@ function performFlipAnimation() {
                 }
             });
         }, 100);
+        chartAnimationTimeouts.push(heightTimeoutId);
         
         // Restore start cards visibility and opacity so they're clean if we revert
         votingPhase.querySelectorAll('.presenter-suspect-card-large').forEach(el => {
@@ -468,13 +533,19 @@ function performFlipAnimation() {
         });
         
         // Fade in the winner column next to the graph smoothly after the graph/bars are fully shown (900ms delay)
-        setTimeout(() => {
+        const winnerTimeoutId = setTimeout(() => {
             if (winnerContainer) {
                 winnerContainer.style.animation = 'fadeInRight 0.8s cubic-bezier(0.25, 1, 0.5, 1) both';
                 winnerContainer.style.transition = 'opacity 0.8s ease';
                 winnerContainer.style.opacity = '1';
             }
+            
+            isTransitioning = false;
+            if (needsVoteUpdate) {
+                loadVotes();
+            }
         }, 900);
+        chartAnimationTimeouts.push(winnerTimeoutId);
     }, 800);
 }
 
@@ -603,7 +674,8 @@ function animateTransition(fromEl, toEl, animationType) {
         toEl.classList.add(`anim-${animationType}-in`);
         
         let cleaned = false;
-        const cleanup = () => {
+        const cleanup = (e) => {
+            if (e && e.target !== toEl) return;
             if (cleaned) return;
             cleaned = true;
             toEl.classList.remove(`anim-${animationType}-in`);
@@ -618,7 +690,8 @@ function animateTransition(fromEl, toEl, animationType) {
     fromEl.classList.add(`anim-${animationType}-out`);
 
     let transitioned = false;
-    const triggerNext = () => {
+    const triggerNext = (e) => {
+        if (e && e.target !== fromEl) return;
         if (transitioned) return;
         transitioned = true;
         fromEl.removeEventListener('animationend', triggerNext);
@@ -630,7 +703,8 @@ function animateTransition(fromEl, toEl, animationType) {
         toEl.classList.add(`anim-${animationType}-in`);
 
         let cleaned = false;
-        const cleanup = () => {
+        const cleanup = (ev) => {
+            if (ev && ev.target !== toEl) return;
             if (cleaned) return;
             cleaned = true;
             toEl.classList.remove(`anim-${animationType}-in`);
