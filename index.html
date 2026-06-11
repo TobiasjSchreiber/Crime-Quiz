@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DOSCHAUHER, EIN MORD! - Live Quiz</title>
+    
+    <!-- Google Fonts: Bebas Neue for title, Special Elite for typewriter, Inter for UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;700&family=Special+Elite&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- QRCode.js (dynamic QR code generation for presenter screen) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <!-- Retro Paper Overlay for vintage texture effect -->
+    <div class="paper-texture"></div>
+
+    <!-- DB Setup Screen (Shown if Supabase is not configured) -->
+    <div id="db-setup-container" class="view-container hidden">
+        <div class="setup-box card">
+            <h1 class="title">DATENBANK EINRICHTEN</h1>
+            <p class="description typewriter">Verbinde die App mit deiner kostenlosen Supabase-Datenbank. Diese Daten werden lokal gespeichert und als QR-Code an die Wähler übertragen.</p>
+            <form id="db-setup-form">
+                <div class="form-group">
+                    <label for="db-url">Supabase Project URL</label>
+                    <input type="url" id="db-url" placeholder="https://xxxxxx.supabase.co" required>
+                </div>
+                <div class="form-group">
+                    <label for="db-anon-key">Supabase Anon Key</label>
+                    <input type="text" id="db-anon-key" placeholder="eyJhbGciOi..." required>
+                </div>
+                <div class="form-group">
+                    <label for="admin-password">Admin Passwort (für dieses Gerät)</label>
+                    <input type="password" id="admin-password" placeholder="Passwort für Admin-Panel" required>
+                </div>
+                <button type="submit" class="btn-retro btn-large">Verbindung Speichern</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 1. VOTER VIEW (?role=voter or default) -->
+    <div id="voter-view" class="view-container hidden">
+        <header class="voter-header">
+            <div class="logo-small">
+                <span class="logo-text">DOSCHAUHER, EIN MORD!</span>
+            </div>
+        </header>
+        <main class="voter-main">
+            <!-- Loading State -->
+            <div id="voter-loading" class="center-content">
+                <div class="spinner"></div>
+                <p class="typewriter">Verbindung zur Krimi-Zentrale wird hergestellt...</p>
+            </div>
+
+            <!-- Waiting for question State -->
+            <div id="voter-waiting" class="center-content hidden">
+                <div class="eye-icon-large animated-pulse"></div>
+                <h2 class="title text-center">Warten auf den Spielleiter...</h2>
+                <p class="typewriter text-center">Die nächste Runde startet gleich. Behalte die Leinwand im Auge!</p>
+            </div>
+
+            <!-- Question State -->
+            <div id="voter-question-container" class="hidden">
+                <h2 id="voter-question-text" class="question-title">Wer ist der Mörder?</h2>
+                <div id="voter-options-list" class="voter-options-grid-polaroid">
+                    <!-- Dynamic option buttons inserted here -->
+                </div>
+            </div>
+
+            <!-- Voted State -->
+            <div id="voter-success" class="center-content hidden">
+                <div class="check-icon animated-bounce">✓</div>
+                <h2 class="title text-center">Stimme abgegeben!</h2>
+                <p class="typewriter text-center">Deine Vermutung wurde registriert. Werden die anderen dir zustimmen? Schau auf die Leinwand...</p>
+            </div>
+        </main>
+    </div>
+
+    <!-- 2. PRESENTER VIEW (?role=presenter) -->
+    <div id="presenter-view" class="view-container hidden">
+        <div class="presenter-layout">
+            <!-- Sidebar with QR Code & Info -->
+            <aside class="presenter-sidebar">
+                <div class="sidebar-header">
+                    <h1 class="presenter-title">DOSCHAUHER, EIN MORD!</h1>
+                    <p class="presenter-subtitle typewriter">Live-Abstimmung</p>
+                </div>
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                    <div class="qr-label typewriter">Scannen zum Mitstimmen!</div>
+                </div>
+                <div class="presenter-stats">
+                    <div class="stat-box">
+                        <span class="stat-number" id="presenter-total-votes">0</span>
+                        <span class="stat-label typewriter">Stimmen abgegeben</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Main area with chart or waiting screen -->
+            <main class="presenter-main">
+                <!-- Waiting view -->
+                <div id="presenter-waiting" class="center-content">
+                    <div class="magnifying-glass-logo">
+                        <svg class="retro-eye-svg" viewBox="0 0 100 100">
+                            <!-- SVG will be injected or styled -->
+                            <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" stroke-width="6"/>
+                            <line x1="50" y1="90" x2="80" y2="120" stroke="currentColor" stroke-width="12" stroke-linecap="round"/>
+                            <ellipse cx="50" cy="50" rx="30" ry="18" fill="none" stroke="currentColor" stroke-width="5"/>
+                            <circle cx="50" cy="50" r="10" fill="#D32F2F"/>
+                        </svg>
+                    </div>
+                    <h2 class="title large-title">SPANNUNG STEIGT...</h2>
+                    <p class="typewriter text-center">Der Spielleiter bereitet die nächste Frage vor.</p>
+                </div>
+
+                <!-- Active Question view -->
+                <div id="presenter-active" class="hidden">
+                    <h1 id="presenter-question-text" class="presenter-question">Wer hat die Tat begangen?</h1>
+                    
+                    <!-- Voting Phase (Large Suspects Grid) -->
+                    <div id="presenter-voting-phase" class="voting-phase-container">
+                        <div class="voting-status-container">
+                            <div class="eye-closed-icon-small animated-shiver"></div>
+                            <div class="voting-status-text">
+                                <h3 class="typewriter text-highlight">Stimmen gehen ein...</h3>
+                                <p class="typewriter-sub">Die Ermittlungen laufen. Ergebnisse werden gleich enthüllt!</p>
+                            </div>
+                        </div>
+                        <div id="voting-phase-suspects" class="voting-suspects-grid">
+                            <!-- Rendered dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Reveal Phase (Bar Chart) -->
+                    <div id="presenter-reveal-phase" class="chart-wrapper hidden">
+                        <!-- Real Chart -->
+                        <div id="presenter-chart" class="chart-container">
+                            <!-- Dynamic columns go here -->
+                        </div>
+                        <!-- Winner Reveal Column on the right -->
+                        <div id="presenter-winner-reveal" class="winner-reveal-column hidden"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+        
+        <!-- Large Suspect Spotlight Overlay -->
+        <div id="suspect-spotlight" class="suspect-spotlight-overlay hidden" onclick="this.classList.add('hidden')">
+            <div class="spotlight-card card" onclick="event.stopPropagation()">
+                <button type="button" class="spotlight-close btn-retro btn-small btn-danger" onclick="document.getElementById('suspect-spotlight').classList.add('hidden')">X</button>
+                <div class="spotlight-title title">HAUPTVERDÄCHTIGER</div>
+                <div class="spotlight-photo-frame">
+                    <div id="spotlight-photo"></div>
+                </div>
+                <div id="spotlight-name" class="spotlight-name typewriter">Name</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ADMIN VIEW (?role=admin) -->
+    <div id="admin-view" class="view-container hidden">
+        <header class="admin-header">
+            <h1 class="admin-title">CRIME QUIZ ADMIN CONTROL</h1>
+            <div class="admin-actions">
+                <button id="admin-logout-btn" class="btn-retro btn-small">Verbindung trennen</button>
+            </div>
+        </header>
+
+        <main class="admin-grid">
+            <!-- Left panel: Control panel -->
+            <section class="admin-panel card">
+                <h2 class="panel-title">Aktive Steuerung</h2>
+                
+                <div class="control-box">
+                    <h3 class="control-label">Aktive Frage:</h3>
+                    <div id="admin-active-question-info" class="active-q-info text-highlight typewriter">Keine Frage aktiv</div>
+                </div>
+
+                <div class="admin-controls-buttons">
+                    <button id="toggle-results-btn" class="btn-retro btn-large w-100 btn-secondary">
+                        Ergebnisse anzeigen/verbergen
+                    </button>
+                    <button id="reset-votes-btn" class="btn-retro btn-large w-100 btn-danger">
+                        Stimmen zurücksetzen
+                    </button>
+                </div>
+
+                <div class="qr-code-admin-box text-center">
+                    <p class="typewriter">Presenter Link:</p>
+                    <a id="presenter-link-btn" href="#" target="_blank" class="btn-retro btn-small">Präsentationsfenster öffnen ↗</a>
+                </div>
+            </section>
+
+            <!-- Right panel: Questions list & Editor -->
+            <section class="admin-panel card flex-grow">
+                <div class="panel-header-row">
+                    <h2 class="panel-title">Fragenkatalog</h2>
+                    <button id="add-question-btn" class="btn-retro btn-small btn-success">+ Neue Frage</button>
+                </div>
+
+                <div id="questions-list" class="questions-list-container">
+                    <!-- Dynamic questions list -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Question Edit Modal -->
+        <div id="question-modal" class="modal hidden">
+            <div class="modal-content card">
+                <h2 id="modal-title" class="panel-title">Frage bearbeiten</h2>
+                <form id="question-form">
+                    <input type="hidden" id="edit-question-id">
+                    
+                    <div class="form-group">
+                        <label for="question-text-input">Frage/Titel</label>
+                        <input type="text" id="question-text-input" placeholder="z.B. Wer ist der Hauptverdächtige?" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Antwortmöglichkeiten (Verdächtige)</label>
+                        <div id="modal-options-container" class="modal-options-list">
+                            <!-- Dynamic option inputs -->
+                        </div>
+                        <button type="button" id="add-option-btn" class="btn-retro btn-small">+ Option hinzufügen</button>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" id="close-modal-btn" class="btn-retro btn-secondary">Abbrechen</button>
+                        <button type="submit" class="btn-retro btn-success">Speichern</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Dialogs Container (Alerts, Confirms, Prompts) -->
+    <div id="custom-dialog-container" class="modal hidden">
+        <div class="modal-content card alert-dialog-card">
+            <h2 id="dialog-title" class="panel-title">Achtung</h2>
+            <p id="dialog-message" class="typewriter"></p>
+            <div id="dialog-input-container" class="form-group hidden">
+                <input type="text" id="dialog-input-field" placeholder="Eingabe...">
+            </div>
+            <div class="modal-actions">
+                <button type="button" id="dialog-cancel-btn" class="btn-retro btn-secondary hidden">Abbrechen</button>
+                <button type="button" id="dialog-ok-btn" class="btn-retro btn-success">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Scripts -->
+    <script src="app.js"></script>
+    <script src="voter.js"></script>
+    <script src="presenter.js"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
