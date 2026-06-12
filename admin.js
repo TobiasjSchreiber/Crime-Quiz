@@ -10,12 +10,14 @@ let adminState = {
     active_question_id: null,
     show_results: false
 };
+let adminVoteCount = 0;
 
 // Initialize Admin Screen
 async function initAdmin() {
     setupAdminEventListeners();
     await fetchState();
     await fetchQuestions();
+    await fetchVoteCount();
     subscribeToAdminVotes();
 }
 
@@ -56,9 +58,39 @@ async function fetchQuestions() {
 
         if (error) throw error;
         adminQuestions = data || [];
+        updateAdminStateUI();
         renderAdminQuestions();
     } catch (err) {
         console.error('Fehler beim Laden der Fragen:', err);
+    }
+}
+
+// Fetch vote count for the active question
+async function fetchVoteCount() {
+    if (!adminState.active_question_id) {
+        adminVoteCount = 0;
+        updateVoteCountUI();
+        return;
+    }
+    try {
+        const { count, error } = await db
+            .from('votes')
+            .select('*', { count: 'exact', head: true })
+            .eq('question_id', adminState.active_question_id);
+            
+        if (error) throw error;
+        adminVoteCount = count || 0;
+        updateVoteCountUI();
+    } catch (err) {
+        console.error('Fehler beim Laden der Stimmanzahl:', err);
+    }
+}
+
+// Update the vote count badge in UI
+function updateVoteCountUI() {
+    const voteBadge = document.getElementById('admin-vote-count-badge');
+    if (voteBadge) {
+        voteBadge.textContent = adminVoteCount;
     }
 }
 
@@ -67,23 +99,42 @@ function updateAdminStateUI() {
     const infoText = document.getElementById('admin-active-question-info');
     const toggleBtn = document.getElementById('toggle-results-btn');
     const presenterLinkBtn = document.getElementById('presenter-link-btn');
+    const voteContainer = document.querySelector('.active-q-votes');
+    const pulseDot = document.querySelector('.pulse-dot');
+
+    const activeQ = adminState.active_question_id ? adminQuestions.find(q => String(q.id) === String(adminState.active_question_id)) : null;
 
     // Update active question display
-    if (adminState.active_question_id) {
-        const activeQ = adminQuestions.find(q => q.id === adminState.active_question_id);
-        infoText.textContent = activeQ ? activeQ.text : 'Aktive Frage wird geladen...';
+    if (activeQ) {
+        infoText.innerHTML = `
+            <div class="dossier-stamp">AKTE OFFEN</div>
+            <div class="dossier-question">${activeQ.text}</div>
+        `;
+        if (pulseDot) {
+            pulseDot.style.backgroundColor = '#4CAF50';
+            pulseDot.style.animation = 'green-pulse 1.5s infinite';
+        }
+        if (voteContainer) voteContainer.classList.remove('hidden');
     } else {
-        infoText.textContent = 'Keine Frage aktiv';
+        infoText.innerHTML = `
+            <div class="dossier-stamp stamp-archived">FALL ARCHIVIERT</div>
+            <div class="dossier-question-empty">Wähle eine Frage aus dem Katalog, um die Abstimmung zu starten.</div>
+        `;
+        if (pulseDot) {
+            pulseDot.style.backgroundColor = '#C62828';
+            pulseDot.style.animation = 'none';
+        }
+        if (voteContainer) voteContainer.classList.add('hidden');
     }
 
     // Update toggle results button appearance
+    toggleBtn.disabled = !activeQ;
+
     if (adminState.show_results) {
         toggleBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Ergebnisse verbergen';
         toggleBtn.classList.remove('btn-secondary');
-        toggleBtn.classList.add('btn-retro');
     } else {
         toggleBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ergebnisse anzeigen';
-        toggleBtn.classList.remove('btn-retro');
         toggleBtn.classList.add('btn-secondary');
     }
 
@@ -106,23 +157,40 @@ function renderAdminQuestions() {
     }
 
     adminQuestions.forEach((q, index) => {
-        const isActive = q.id === adminState.active_question_id;
+        const isActive = adminState.active_question_id && String(q.id) === String(adminState.active_question_id);
         const card = document.createElement('div');
         card.className = `q-admin-card ${isActive ? 'active' : ''}`;
+        
+        const suspectPills = q.options.map((opt, idx) => {
+            const sil = q.silhouettes && q.silhouettes[idx] ? q.silhouettes[idx] : 'question';
+            return `
+                <div class="q-admin-suspect-pill" title="${opt}">
+                    <span class="q-admin-suspect-avatar">${getSilhouetteSvg(sil)}</span>
+                    <span class="q-admin-suspect-name">${opt}</span>
+                </div>
+            `;
+        }).join('');
         
         card.innerHTML = `
             <div class="q-admin-details">
                 <div class="q-admin-title">${index + 1}. ${q.text}</div>
-                <div class="q-admin-meta">
-                    Optionen: ${q.options.length} | Typ: ${q.options.join(', ')}
+                <div class="q-admin-meta" style="margin-bottom: 0.2rem;">
+                    Optionen: ${q.options.length}
+                </div>
+                <div class="q-admin-suspect-preview">
+                    ${suspectPills}
                 </div>
             </div>
             <div class="q-admin-actions">
                 <button class="btn-retro btn-small ${isActive ? 'btn-danger' : 'btn-success'}" onclick="toggleActiveQuestion('${q.id}')">
                     ${isActive ? 'Deaktivieren' : 'Aktivieren'}
                 </button>
-                <button class="btn-retro btn-small btn-secondary" onclick="openEditQuestionModal('${q.id}')">Bearbeiten</button>
-                <button class="btn-retro btn-small btn-danger" onclick="deleteQuestion('${q.id}')">Löschen</button>
+                <button class="btn-retro btn-small btn-secondary" onclick="openEditQuestionModal('${q.id}')" title="Bearbeiten">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="btn-retro btn-small btn-danger" onclick="deleteQuestion('${q.id}')" title="Löschen">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
             </div>
         `;
         listContainer.appendChild(card);
@@ -131,7 +199,7 @@ function renderAdminQuestions() {
 
 // Toggle active question in the database
 async function toggleActiveQuestion(questionId) {
-    const isCurrentActive = adminState.active_question_id === questionId;
+    const isCurrentActive = adminState.active_question_id && String(adminState.active_question_id) === String(questionId);
     const targetId = isCurrentActive ? null : questionId;
 
     try {
@@ -157,6 +225,7 @@ async function toggleActiveQuestion(questionId) {
 
 // Toggle showing/hiding results on the presenter screen
 async function toggleResults() {
+    if (!adminState.active_question_id) return;
     try {
         const newState = !adminState.show_results;
         const { error } = await db
@@ -203,7 +272,7 @@ async function deleteQuestion(questionId) {
 
     try {
         // If deleting active question, unset it first in state
-        if (adminState.active_question_id === questionId) {
+        if (adminState.active_question_id && String(adminState.active_question_id) === String(questionId)) {
             await db
                 .from('quiz_state')
                 .update({ active_question_id: null, show_results: false })
@@ -229,12 +298,15 @@ async function deleteQuestion(questionId) {
 
 // Setup Event Listeners
 function setupAdminEventListeners() {
-    document.getElementById('admin-logout-btn').onclick = async () => {
-        if (await showCustomConfirm('Verbindung zur Datenbank wirklich trennen?')) {
-            localStorage.clear();
-            window.location.reload();
-        }
-    };
+    const logoutBtn = document.getElementById('admin-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.onclick = async () => {
+            if (await showCustomConfirm('Verbindung zur Datenbank wirklich trennen?')) {
+                localStorage.clear();
+                window.location.reload();
+            }
+        };
+    }
 
     document.getElementById('toggle-results-btn').onclick = toggleResults;
     document.getElementById('reset-votes-btn').onclick = resetActiveVotes;
@@ -256,11 +328,19 @@ function setupAdminEventListeners() {
 // Subscribe to real-time updates for active question changes
 function subscribeToAdminVotes() {
     db
-        .channel('admin-realtime')
-        .on('postgres_changes', { event: '*', filter: 'id=eq.1', schema: 'public', table: 'quiz_state' }, payload => {
+        .channel('admin-state-realtime')
+        .on('postgres_changes', { event: '*', filter: 'id=eq.1', schema: 'public', table: 'quiz_state' }, async payload => {
             adminState = payload.new;
             updateAdminStateUI();
             renderAdminQuestions();
+            await fetchVoteCount();
+        })
+        .subscribe();
+
+    db
+        .channel('admin-votes-realtime')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, async payload => {
+            await fetchVoteCount();
         })
         .subscribe();
 }

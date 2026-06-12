@@ -41,7 +41,7 @@ async function fetchVoterState() {
 async function handleVoterStateChange() {
     if (voterState.active_question_id) {
         // If question is already loaded and is the same, do nothing
-        if (voterActiveQuestion && voterActiveQuestion.id === voterState.active_question_id) {
+        if (voterActiveQuestion && String(voterActiveQuestion.id) === String(voterState.active_question_id)) {
             return;
         }
 
@@ -82,6 +82,7 @@ function renderVoterQuestion() {
 
     document.getElementById('voter-question-text').textContent = voterActiveQuestion.text;
     const list = document.getElementById('voter-options-list');
+    list.classList.remove('voting-in-progress');
     list.innerHTML = '';
 
     voterActiveQuestion.options.forEach((opt, idx) => {
@@ -94,7 +95,13 @@ function renderVoterQuestion() {
         // Alternating rotations for detective desk look
         const rotations = ['-1.5deg', '1deg', '-2deg', '1.5deg'];
         btn.style.setProperty('--rotation', rotations[idx % rotations.length]);
-        btn.onclick = () => submitVote(idx);
+        
+        btn.onclick = async () => {
+            btn.classList.add('selected');
+            list.classList.add('voting-in-progress');
+            await new Promise(resolve => setTimeout(resolve, 450));
+            submitVote(idx);
+        };
 
         btn.innerHTML = `
             <div class="suspect-photo-container">

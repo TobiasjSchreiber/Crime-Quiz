@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #F7F5EB;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            width: 300px;
+            height: 300px;
+            border: 1px dashed #ccc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #F7F5EB;
+        }
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+        .logo-color-dark {
+            color: #191311;
+        }
+    </style>
+</head>
+<body>
+    <div class="container logo-color-dark">
+        <!-- Candidate SVG 1 -->
+        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <!-- Magnifying Glass Handle -->
+            <polygon points="76,132 94,132 101,195 71,195" transform="rotate(56 85 85)" fill="currentColor"/>
+            
+            <!-- Magnifying Glass Ring -->
+            <circle cx="85" cy="85" r="55" fill="none" stroke="currentColor" stroke-width="10"/>
+            
+            <!-- Eyebrow -->
+            <path d="M 44,72 Q 85,44 120,70 Q 85,53 44,72 Z" fill="currentColor"/>
+            
+            <!-- Eye Upper Lid -->
+            <path d="M 46,85 Q 85,57 122,83" fill="none" stroke="currentColor" stroke-width="6" stroke-linecap="round"/>
+            
+            <!-- Eye Lower Lid -->
+            <path d="M 46,85 Q 85,103 122,83" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+            
+            <!-- Iris (Black) -->
+            <circle cx="80" cy="82" r="18" fill="currentColor"/>
+            
+            <!-- Pupil (Red) -->
+            <circle cx="80" cy="82" r="6.5" fill="#E9421F"/>
+        </svg>
+    </div>
+</body>
+</html>

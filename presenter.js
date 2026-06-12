@@ -36,7 +36,7 @@ function generateVoterQrCode() {
         text: voterUrl,
         width: 200,
         height: 200,
-        colorDark: "#121212",
+        colorDark: "#191311",
         colorLight: "#ffffff",
         correctLevel: QRCode.CorrectLevel.H
     });
@@ -352,11 +352,10 @@ function performFlipAnimation() {
     votingPhase.style.height = `${votingRect.height}px`;
     votingPhase.style.zIndex = '10';
     
-    // Hide the voting status container ("Stimmen gehen ein...") immediately
+    // Hide the voting status container ("Stimmen gehen ein...") beautifully
     const statusContainer = votingPhase.querySelector('.voting-status-container');
     if (statusContainer) {
-        statusContainer.style.transition = 'opacity 0.2s ease';
-        statusContainer.style.opacity = '0';
+        statusContainer.classList.add('voting-status-fade-out');
     }
     
     // Ensure chart is fully rendered in its correct final position (delay bar height animation until flight ends)
@@ -496,10 +495,9 @@ function performFlipAnimation() {
         votingPhase.style.zIndex = '';
         votingPhase.classList.add('hidden');
         
-        // Reset voting status container opacity for next use
+        // Reset voting status container class for next use
         if (statusContainer) {
-            statusContainer.style.opacity = '';
-            statusContainer.style.transition = '';
+            statusContainer.classList.remove('voting-status-fade-out');
         }
         
         // Animate the bars rising and text appearing
