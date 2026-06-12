@@ -138,11 +138,23 @@ function updateAdminStateUI() {
         toggleBtn.classList.add('btn-secondary');
     }
 
-    // Build the presenter link with credentials embedded so it loads automatically on another screen
-    const url = localStorage.getItem('supabaseUrl');
-    const key = localStorage.getItem('supabaseKey');
+    // Build the presenter link
+    let presenterUrl = `${window.location.origin}${window.location.pathname}?role=presenter`;
+    
+    // Only append DB credentials if they are NOT hardcoded in CONFIG
+    if (typeof CONFIG !== 'undefined' && (!CONFIG.supabaseUrl || !CONFIG.supabaseKey)) {
+        const url = localStorage.getItem('supabaseUrl');
+        const key = localStorage.getItem('supabaseKey');
+        if (url && key) {
+            presenterUrl += `&sb_url=${encodeURIComponent(url)}&sb_key=${encodeURIComponent(key)}`;
+        }
+    }
+    
     const pwd = localStorage.getItem('adminPassword');
-    const presenterUrl = `${window.location.origin}${window.location.pathname}?role=presenter&sb_url=${encodeURIComponent(url)}&sb_key=${encodeURIComponent(key)}&admin_pwd=${encodeURIComponent(pwd)}`;
+    if (pwd) {
+        presenterUrl += `&admin_pwd=${encodeURIComponent(pwd)}`;
+    }
+    
     presenterLinkBtn.href = presenterUrl;
 }
 

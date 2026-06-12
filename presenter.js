@@ -23,11 +23,16 @@ async function initPresenter() {
 
 // Generate QR Code with credentials embedded
 function generateVoterQrCode() {
-    const sbUrl = localStorage.getItem('supabaseUrl');
-    const sbKey = localStorage.getItem('supabaseKey');
+    let voterUrl = `${window.location.origin}${window.location.pathname}?role=voter`;
     
-    // Construct voter URL
-    const voterUrl = `${window.location.origin}${window.location.pathname}?role=voter&sb_url=${encodeURIComponent(sbUrl)}&sb_key=${encodeURIComponent(sbKey)}`;
+    // Only append DB credentials if they are NOT hardcoded in CONFIG
+    if (typeof CONFIG !== 'undefined' && (!CONFIG.supabaseUrl || !CONFIG.supabaseKey)) {
+        const sbUrl = localStorage.getItem('supabaseUrl');
+        const sbKey = localStorage.getItem('supabaseKey');
+        if (sbUrl && sbKey) {
+            voterUrl += `&sb_url=${encodeURIComponent(sbUrl)}&sb_key=${encodeURIComponent(sbKey)}`;
+        }
+    }
     
     const qrContainer = document.getElementById('qrcode');
     qrContainer.innerHTML = ''; // Clear previous if any
@@ -38,7 +43,7 @@ function generateVoterQrCode() {
         height: 200,
         colorDark: "#191311",
         colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
+        correctLevel: QRCode.CorrectLevel.M
     });
 }
 
