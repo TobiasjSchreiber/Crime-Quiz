@@ -7,6 +7,21 @@ Deine Live-Links:
 - **Moderator-Panel (Admin)**: [https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin](https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin)
 - **Beamer-Leinwand (Presenter)**: [https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter](https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter)
 
+### Am Handy
+
+<img alt="image" src="https://github.com/user-attachments/assets/408414cb-ddd3-4000-bc19-d8e7659d1505" width="25%">
+
+### Live Vorschau
+
+<img src="https://github.com/user-attachments/assets/7440da29-33a9-4545-a76f-bf289cabbda3" width="50%">
+
+<img src="https://github.com/user-attachments/assets/fb79127e-5252-421e-bc5d-f42b48784ded" width="50%">
+
+### Admin Dashboard
+
+<img src="https://github.com/user-attachments/assets/fb576ef9-4039-4289-a25b-d2e7b0fe316f" width="50%">
+
+
 ---
 
 ## 🚀 Features
