@@ -9,17 +9,17 @@ Deine Live-Links:
 
 ### Am Handy
 
-<img alt="image" src="https://github.com/user-attachments/assets/004a1a99-a0d6-44a2-9c14-fb68e617146d" width="25%">
+<img alt="image" src="https://github.com/user-attachments/assets/408414cb-ddd3-4000-bc19-d8e7659d1505" width="25%">
 
 ### Live Vorschau
 
-<img src="https://github.com/user-attachments/assets/1cc735f7-4f11-4487-ae8f-065526f78c8d" width="50%">
+<img src="https://github.com/user-attachments/assets/7440da29-33a9-4545-a76f-bf289cabbda3" width="50%">
 
-<img src="https://github.com/user-attachments/assets/57ad0980-55b4-44f3-9952-c07ce8f4d34e" width="50%">
+<img src="https://github.com/user-attachments/assets/fb79127e-5252-421e-bc5d-f42b48784ded" width="50%">
 
 ### Admin Dashboard
 
-<img src="https://github.com/user-attachments/assets/6f700da4-2a24-4586-beab-7a64a0bec0d1" width="50%">
+<img src="https://github.com/user-attachments/assets/fb576ef9-4039-4289-a25b-d2e7b0fe316f" width="50%">
 
 
 
