@@ -1697,6 +1697,8 @@ body {
     align-items: start; /* Prevent vertical stretch to preserve aspect-ratio */
     justify-items: center; /* Prevent horizontal stretch beyond max-width */
     width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
 }
 
 .voter-options-grid-polaroid {
@@ -1752,7 +1754,6 @@ body {
     box-shadow: 0 0 15px rgba(46, 125, 50, 0.3), 6px 6px 0px #2E7D32 !important;
     transform: scale(1.08) rotate(var(--rotation, 0deg)) !important;
     z-index: 10;
-    pointer-events: none;
 }
 
 .voter-suspect-card .suspect-photo-container {
@@ -2591,6 +2592,7 @@ select:focus-visible {
     
     .voter-options-grid-polaroid {
         gap: 1rem 0.75rem;
+        max-width: 290px;
     }
     
     .voter-suspect-card {

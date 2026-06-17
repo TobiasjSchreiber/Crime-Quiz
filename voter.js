@@ -136,9 +136,10 @@ function renderVoterQuestion() {
 
     selectedOptionIndex = null;
     
-    const confirmContainer = document.getElementById('voter-confirm-container');
-    if (confirmContainer) {
-        confirmContainer.classList.add('hidden');
+    // Disable the confirm button when rendering a new question
+    const confirmBtn = document.getElementById('voter-confirm-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
     }
 
     document.getElementById('voter-question-text').textContent = voterActiveQuestion.text;
@@ -158,16 +159,26 @@ function renderVoterQuestion() {
         btn.style.setProperty('--rotation', rotations[idx % rotations.length]);
         
         btn.onclick = () => {
+            const isAlreadySelected = btn.classList.contains('selected');
+            
             // Remove selected class from all sibling cards
             list.querySelectorAll('.voter-suspect-card').forEach(c => c.classList.remove('selected'));
             
-            btn.classList.add('selected');
-            list.classList.add('has-selection');
-            selectedOptionIndex = idx;
-            
-            // Show confirm button
-            if (confirmContainer) {
-                confirmContainer.classList.remove('hidden');
+            if (isAlreadySelected) {
+                // Deselect
+                list.classList.remove('has-selection');
+                selectedOptionIndex = null;
+                if (confirmBtn) {
+                    confirmBtn.disabled = true;
+                }
+            } else {
+                // Select
+                btn.classList.add('selected');
+                list.classList.add('has-selection');
+                selectedOptionIndex = idx;
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                }
             }
         };
 
