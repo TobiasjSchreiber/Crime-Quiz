@@ -74,10 +74,15 @@ async function handleVoterStateChange() {
                 localStorage.setItem(`voted_${voterActiveQuestion.id}`, 'true');
                 showVoterLayout('success');
             } else {
-                // If no vote is found in the database, clear local storage for this question
-                localStorage.removeItem(`voted_${voterActiveQuestion.id}`);
-                renderVoterQuestion();
-                showVoterLayout('question');
+                // If results are already shown, they cannot vote anymore
+                if (voterState.show_results) {
+                    localStorage.removeItem(`voted_${voterActiveQuestion.id}`);
+                    showVoterLayout('closed');
+                } else {
+                    localStorage.removeItem(`voted_${voterActiveQuestion.id}`);
+                    renderVoterQuestion();
+                    showVoterLayout('question');
+                }
             }
         } catch (err) {
             console.error('Fehler beim Überprüfen der Stimme:', err);
@@ -86,8 +91,12 @@ async function handleVoterStateChange() {
             if (hasVoted !== null) {
                 showVoterLayout('success');
             } else {
-                renderVoterQuestion();
-                showVoterLayout('question');
+                if (voterState.show_results) {
+                    showVoterLayout('closed');
+                } else {
+                    renderVoterQuestion();
+                    showVoterLayout('question');
+                }
             }
         }
     } else {
@@ -143,6 +152,19 @@ async function submitVote(optionIndex) {
     showVoterLayout('loading');
 
     try {
+        // Refresh state first to make sure results are not shown yet
+        const { data: stateData } = await db
+            .from('quiz_state')
+            .select('show_results')
+            .eq('id', 1)
+            .single();
+
+        if (stateData && stateData.show_results) {
+            await showCustomAlert('Die Abstimmung für diese Runde ist bereits geschlossen!');
+            showVoterLayout('closed');
+            return;
+        }
+
         const { error } = await db
             .from('votes')
             .insert([{
@@ -187,6 +209,7 @@ function showVoterLayout(view) {
     document.getElementById('voter-waiting').classList.add('hidden');
     document.getElementById('voter-question-container').classList.add('hidden');
     document.getElementById('voter-success').classList.add('hidden');
+    document.getElementById('voter-closed').classList.add('hidden');
 
     if (view === 'loading') {
         document.getElementById('voter-loading').classList.remove('hidden');
@@ -196,5 +219,7 @@ function showVoterLayout(view) {
         document.getElementById('voter-question-container').classList.remove('hidden');
     } else if (view === 'success') {
         document.getElementById('voter-success').classList.remove('hidden');
+    } else if (view === 'closed') {
+        document.getElementById('voter-closed').classList.remove('hidden');
     }
 }
