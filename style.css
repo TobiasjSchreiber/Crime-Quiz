@@ -264,6 +264,14 @@ body {
    VOTER VIEW (?role=voter)
    ========================================================================== */
 
+#voter-view {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
 .voter-header {
     background-color: var(--color-red);
     border-bottom: none;
@@ -289,7 +297,8 @@ body {
     max-width: 600px;
     width: 100%;
     margin: 0 auto;
-    justify-content: center;
+    overflow-y: auto;
+    justify-content: safe center;
 }
 
 .question-title {
@@ -2551,5 +2560,47 @@ select:focus-visible {
     
     .q-admin-actions {
         width: 95px;
+    }
+
+    /* Voter mobile adjustments */
+    .voter-header {
+        padding: 0.75rem;
+    }
+    
+    .logo-small .logo-text {
+        font-size: 1.6rem;
+    }
+    
+    .voter-main {
+        padding: 1rem;
+    }
+    
+    .question-title {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .voter-options-grid-polaroid {
+        gap: 1rem 0.75rem;
+    }
+    
+    .voter-suspect-card {
+        max-width: 130px;
+        padding: 6px;
+        padding-bottom: 10px;
+    }
+    
+    .voter-suspect-card .suspect-photo-container {
+        margin-bottom: 6px;
+    }
+    
+    .voter-suspect-card .suspect-name {
+        font-size: 0.85rem;
+        margin-top: 6px;
+    }
+    
+    .voter-footer {
+        padding: 1rem;
     }
 }
