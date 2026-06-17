@@ -7,11 +7,35 @@ let voterState = {
     active_question_id: null,
     show_results: false
 };
+let selectedOptionIndex = null;
 
 // Initialize Voter Screen
 async function initVoter() {
+    setupVoterConfirmListener();
     await fetchVoterState();
     subscribeToVoterState();
+}
+
+// Set up the event listener for the confirmation button
+function setupVoterConfirmListener() {
+    const confirmBtn = document.getElementById('voter-confirm-btn');
+    if (confirmBtn) {
+        confirmBtn.onclick = async () => {
+            if (selectedOptionIndex !== null) {
+                const list = document.getElementById('voter-options-list');
+                list.classList.add('voting-in-progress');
+                
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Wird übermittelt...';
+                
+                await submitVote(selectedOptionIndex);
+                
+                // Reset button text
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = 'Auswahl Bestätigen';
+            }
+        };
+    }
 }
 
 // Fetch current state from database
@@ -110,9 +134,16 @@ async function handleVoterStateChange() {
 function renderVoterQuestion() {
     if (!voterActiveQuestion) return;
 
+    selectedOptionIndex = null;
+    
+    const confirmContainer = document.getElementById('voter-confirm-container');
+    if (confirmContainer) {
+        confirmContainer.classList.add('hidden');
+    }
+
     document.getElementById('voter-question-text').textContent = voterActiveQuestion.text;
     const list = document.getElementById('voter-options-list');
-    list.classList.remove('voting-in-progress');
+    list.classList.remove('voting-in-progress', 'has-selection');
     list.innerHTML = '';
 
     voterActiveQuestion.options.forEach((opt, idx) => {
@@ -126,11 +157,18 @@ function renderVoterQuestion() {
         const rotations = ['-1.5deg', '1deg', '-2deg', '1.5deg'];
         btn.style.setProperty('--rotation', rotations[idx % rotations.length]);
         
-        btn.onclick = async () => {
+        btn.onclick = () => {
+            // Remove selected class from all sibling cards
+            list.querySelectorAll('.voter-suspect-card').forEach(c => c.classList.remove('selected'));
+            
             btn.classList.add('selected');
-            list.classList.add('voting-in-progress');
-            await new Promise(resolve => setTimeout(resolve, 450));
-            submitVote(idx);
+            list.classList.add('has-selection');
+            selectedOptionIndex = idx;
+            
+            // Show confirm button
+            if (confirmContainer) {
+                confirmContainer.classList.remove('hidden');
+            }
         };
 
         btn.innerHTML = `

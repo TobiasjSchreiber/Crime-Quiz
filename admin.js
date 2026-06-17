@@ -11,6 +11,7 @@ let adminState = {
     show_results: false
 };
 let adminVoteCount = 0;
+let adminQuestionsVoteCounts = {};
 
 // Initialize Admin Screen
 async function initAdmin() {
@@ -59,10 +60,33 @@ async function fetchQuestions() {
 
         if (error) throw error;
         adminQuestions = data || [];
+        
+        await fetchAllVoteCounts();
         updateAdminStateUI();
         renderAdminQuestions();
     } catch (err) {
         console.error('Fehler beim Laden der Fragen:', err);
+    }
+}
+
+// Fetch vote counts for all questions
+async function fetchAllVoteCounts() {
+    try {
+        const { data, error } = await db
+            .from('votes')
+            .select('question_id');
+            
+        if (error) throw error;
+        
+        const counts = {};
+        if (data) {
+            data.forEach(v => {
+                counts[v.question_id] = (counts[v.question_id] || 0) + 1;
+            });
+        }
+        adminQuestionsVoteCounts = counts;
+    } catch (err) {
+        console.error('Fehler beim Laden aller Stimmanzahlen:', err);
     }
 }
 
@@ -171,6 +195,7 @@ function renderAdminQuestions() {
 
     adminQuestions.forEach((q, index) => {
         const isActive = adminState.active_question_id && String(q.id) === String(adminState.active_question_id);
+        const voteCount = adminQuestionsVoteCounts[q.id] || 0;
         const card = document.createElement('div');
         card.className = `q-admin-card ${isActive ? 'active' : ''}`;
         
@@ -188,7 +213,7 @@ function renderAdminQuestions() {
             <div class="q-admin-details">
                 <div class="q-admin-title">${index + 1}. ${q.text}</div>
                 <div class="q-admin-meta" style="margin-bottom: 0.2rem;">
-                    Optionen: ${q.options.length}
+                    Optionen: ${q.options.length} | Stimmen gesamt: <strong>${voteCount}</strong>
                 </div>
                 <div class="q-admin-suspect-preview">
                     ${suspectPills}
@@ -281,6 +306,10 @@ async function resetActiveVotes() {
             })
             .eq('id', 1);
 
+        await fetchVoteCount();
+        await fetchAllVoteCounts();
+        renderAdminQuestions();
+
         await showCustomAlert('Stimmen wurden zurückgesetzt.');
     } catch (err) {
         console.error('Fehler beim Zurücksetzen der Stimmen:', err);
@@ -364,6 +393,8 @@ function subscribeToAdminVotes() {
         .channel('admin-votes-realtime')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'votes' }, async payload => {
             await fetchVoteCount();
+            await fetchAllVoteCounts();
+            renderAdminQuestions();
         })
         .subscribe();
 }

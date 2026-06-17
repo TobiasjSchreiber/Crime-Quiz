@@ -1699,15 +1699,23 @@ body {
     width: 100%;
 }
 
-.voter-options-list {
+.voter-options-grid-polaroid {
     transition: opacity 0.3s ease;
 }
 
-.voter-options-list.voting-in-progress .voter-suspect-card:not(.selected) {
+.voter-options-grid-polaroid.voting-in-progress {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.voter-options-grid-polaroid.voting-in-progress .voter-suspect-card:not(.selected) {
     opacity: 0.25;
     transform: scale(0.9) rotate(var(--rotation, 0deg)) !important;
-    pointer-events: none;
     box-shadow: 1px 1px 0px var(--color-dark);
+}
+
+.voter-options-grid-polaroid.has-selection .voter-suspect-card:not(.selected) {
+    opacity: 0.6;
 }
 
 .voter-suspect-card {
