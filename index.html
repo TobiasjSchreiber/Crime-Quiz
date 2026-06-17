@@ -21,6 +21,9 @@
     
     <!-- QRCode.js (dynamic QR code generation for presenter screen) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="Lupe.svg">
 </head>
 <body>
     <!-- Retro Paper Overlay for vintage texture effect -->
@@ -29,6 +32,9 @@
     <!-- DB Setup Screen (Shown if Supabase is not configured) -->
     <div id="db-setup-container" class="view-container hidden">
         <div class="setup-box card">
+            <div style="display: flex; justify-content: center; margin-bottom: 1.5rem; height: 90px;">
+                <img src="Lupe.svg" alt="Logo" style="height: 100%; filter: drop-shadow(4px 4px 0px var(--color-dark));">
+            </div>
             <h1 class="title">DATENBANK EINRICHTEN</h1>
             <p class="description typewriter">Verbinde die App mit deiner kostenlosen Supabase-Datenbank. Diese Daten werden lokal gespeichert und als QR-Code an die Wähler übertragen.</p>
             <form id="db-setup-form">
