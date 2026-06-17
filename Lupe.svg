@@ -9,6 +9,12 @@
       .cls-2 {
         fill: #e03616;
       }
+
+      @media (prefers-color-scheme: dark) {
+        .cls-1 {
+          fill: #f7f5eb;
+        }
+      }
     </style>
   </defs>
   <g id="Ebene_1-2" data-name="Ebene 1">
