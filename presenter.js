@@ -105,7 +105,7 @@ async function handleStateChange() {
             }
             
             // Show stats box
-            if (statsBox) statsBox.classList.remove('hidden');
+            if (statsBox) statsBox.classList.add('show');
             
             // Load and render votes
             await loadVotes();
@@ -123,7 +123,7 @@ async function handleStateChange() {
         }
         
         // Hide stats box and reset vote counter to 0
-        if (statsBox) statsBox.classList.add('hidden');
+        if (statsBox) statsBox.classList.remove('show');
         document.getElementById('presenter-total-votes').textContent = '0';
     }
     
