@@ -74,6 +74,7 @@ async function fetchPresenterState() {
 async function handleStateChange() {
     const waitingView = document.getElementById('presenter-waiting');
     const activeView = document.getElementById('presenter-active');
+    const statsBox = document.querySelector('.presenter-stats');
     
     if (presenterState.active_question_id) {
         // Fetch question details
@@ -103,6 +104,9 @@ async function handleStateChange() {
                 activeView.classList.remove('hidden');
             }
             
+            // Show stats box
+            if (statsBox) statsBox.classList.remove('hidden');
+            
             // Load and render votes
             await loadVotes();
         } catch (err) {
@@ -117,6 +121,10 @@ async function handleStateChange() {
             waitingView.classList.remove('hidden');
             activeView.classList.add('hidden');
         }
+        
+        // Hide stats box and reset vote counter to 0
+        if (statsBox) statsBox.classList.add('hidden');
+        document.getElementById('presenter-total-votes').textContent = '0';
     }
     
     updateResultsVisibility();

@@ -152,8 +152,10 @@ function updateAdminStateUI() {
         if (voteContainer) voteContainer.classList.add('hidden');
     }
 
-    // Update toggle results button appearance
+    // Update toggle results and reset buttons appearance
+    const resetBtn = document.getElementById('reset-votes-btn');
     toggleBtn.disabled = !activeQ;
+    if (resetBtn) resetBtn.disabled = !activeQ;
 
     if (adminState.show_results) {
         toggleBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg> Ergebnisse verbergen';
@@ -316,6 +318,45 @@ async function resetActiveVotes() {
     }
 }
 
+// Reset ALL votes for ALL questions in the database
+async function resetAllVotes() {
+    if (!await showCustomConfirm('Möchtest du wirklich ALLE Stimmen für ALLE Fragen im gesamten Spiel unwiderruflich löschen?')) {
+        return;
+    }
+    
+    // Double confirmation for safety
+    if (!await showCustomConfirm('Bist du dir absolut sicher? Alle Diagramme und Wählerstimmen gehen dabei verloren.')) {
+        return;
+    }
+
+    try {
+        // Deletes all rows in votes table (device_id IS NOT NULL is always true)
+        const { error } = await db
+            .from('votes')
+            .delete()
+            .not('device_id', 'is', null);
+
+        if (error) throw error;
+
+        // Also update quiz_state to trigger real-time updates for voter/presenter
+        await db
+            .from('quiz_state')
+            .update({ 
+                active_question_id: adminState.active_question_id,
+                show_results: false
+            })
+            .eq('id', 1);
+
+        await fetchVoteCount();
+        await fetchAllVoteCounts();
+        renderAdminQuestions();
+
+        await showCustomAlert('Alle Stimmen im Spiel wurden gelöscht.');
+    } catch (err) {
+        console.error('Fehler beim Zurücksetzen aller Stimmen:', err);
+    }
+}
+
 // Delete question
 async function deleteQuestion(questionId) {
     if (!await showCustomConfirm('Diese Frage und alle zugehörigen Stimmen wirklich löschen?')) {
@@ -362,12 +403,27 @@ function setupAdminEventListeners() {
 
     document.getElementById('toggle-results-btn').onclick = toggleResults;
     document.getElementById('reset-votes-btn').onclick = resetActiveVotes;
+    
+    const resetAllBtn = document.getElementById('reset-all-votes-btn');
+    if (resetAllBtn) {
+        resetAllBtn.onclick = resetAllVotes;
+    }
 
     // Modal Control
     const modal = document.getElementById('question-modal');
     document.getElementById('add-question-btn').onclick = () => openEditQuestionModal(null);
     document.getElementById('close-modal-btn').onclick = () => modal.classList.add('hidden');
     document.getElementById('add-option-btn').onclick = () => addOptionInputField('', 'question');
+
+    const yesnoBtn = document.getElementById('template-yesno-btn');
+    if (yesnoBtn) {
+        yesnoBtn.onclick = () => {
+            const optionsContainer = document.getElementById('modal-options-container');
+            optionsContainer.innerHTML = '';
+            addOptionInputField('Ja', 'question');
+            addOptionInputField('Nein', 'question');
+        };
+    }
 
     document.getElementById('question-form').onsubmit = handleQuestionFormSubmit;
 

@@ -8,6 +8,8 @@ let voterState = {
     show_results: false
 };
 let selectedOptionIndex = null;
+let realtimeChannel = null;
+let pollingInterval = null;
 
 // Initialize Voter Screen
 async function initVoter() {
@@ -250,15 +252,65 @@ async function submitVote(optionIndex) {
     }
 }
 
-// Subscribe to real-time updates for active question changes
+// Subscribe to real-time updates with fallback to polling if limit is exceeded
 function subscribeToVoterState() {
-    db
+    connectRealtime();
+    
+    // Disconnect when tab is in background to save Supabase connection slots
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            disconnectRealtime();
+            stopPolling();
+        } else {
+            connectRealtime();
+            fetchVoterState();
+        }
+    });
+}
+
+function connectRealtime() {
+    if (realtimeChannel) return; // Already connected
+    
+    realtimeChannel = db
         .channel('voter-state')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'quiz_state', filter: 'id=eq.1' }, payload => {
             voterState = payload.new;
             handleVoterStateChange();
-        })
-        .subscribe();
+        });
+        
+    realtimeChannel.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+            console.log('Echtzeit-Verbindung aktiv.');
+            stopPolling();
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+            console.warn('Echtzeit-Limit erreicht oder Verbindung fehlgeschlagen. Wechsle zu Polling...');
+            disconnectRealtime();
+            startPolling();
+        }
+    });
+}
+
+function disconnectRealtime() {
+    if (realtimeChannel) {
+        try {
+            db.removeChannel(realtimeChannel);
+        } catch (e) {
+            console.error(e);
+        }
+        realtimeChannel = null;
+    }
+}
+
+function startPolling() {
+    if (pollingInterval) return;
+    pollingInterval = setInterval(fetchVoterState, 4000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
+    }
 }
 
 // Helper to switch voter screen sub-views
