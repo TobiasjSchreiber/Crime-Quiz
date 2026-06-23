@@ -117,7 +117,7 @@ async function handleStateChange() {
             renderVotingPhaseSuspects();
             
             // Show active view with transition
-            if (activeView.classList.contains('hidden') || isSwitchingActive) {
+            if (isSwitchingActive) {
                 activeView.classList.remove('hidden');
                 activeView.className = activeView.className.replace(/\banim-\S+/g, '').trim();
                 activeView.classList.add('anim-paper-slide-in');
@@ -131,6 +131,8 @@ async function handleStateChange() {
                 };
                 activeView.addEventListener('animationend', cleanup);
                 setTimeout(cleanup, 800);
+            } else if (activeView.classList.contains('hidden')) {
+                animateTransition(waitingView, activeView, 'paper-slide');
             } else {
                 waitingView.classList.add('hidden');
                 activeView.classList.remove('hidden');
