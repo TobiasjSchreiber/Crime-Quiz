@@ -3,9 +3,9 @@
 Ein interaktives Echtzeit-Umfragewerkzeug (ähnlich wie Mentimeter) speziell für Live-Krimishows. Die Anwendung läuft komplett serverlos (statisches HTML/JS/CSS), wird auf **GitHub Pages** gehostet und nutzt **Supabase** als kostenlose Echtzeit-Datenbank.
 
 Deine Live-Links:
-- **Zuschauer-Voting (Voter)**: <a href="https://doschauher.github.io/Crime-Quiz/" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/</a>
-- **Moderator-Panel (Admin)**: <a href="https://doschauher.github.io/Crime-Quiz/?role=admin" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin</a>
-- **Beamer-Leinwand (Presenter)**: <a href="https://doschauher.github.io/Crime-Quiz/?role=presenter" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter</a>
+- **Zuschauer-Voting (Voter)**: <a href="https://doschauher.github.io/Crime-Quiz/" target="_blank" rel="noopener noreferrer">https://doschauher.github.io/Crime-Quiz/</a>
+- **Moderator-Panel (Admin)**: <a href="https://doschauher.github.io/Crime-Quiz/?role=admin" target="_blank" rel="noopener noreferrer">https://doschauher.github.io/Crime-Quiz/?role=admin</a>
+- **Beamer-Leinwand (Presenter)**: <a href="https://doschauher.github.io/Crime-Quiz/?role=presenter" target="_blank" rel="noopener noreferrer">https://doschauher.github.io/Crime-Quiz/?role=presenter</a>
 
 ### Am Handy
 
