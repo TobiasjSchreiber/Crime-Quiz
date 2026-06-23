@@ -3,9 +3,9 @@
 Ein interaktives Echtzeit-Umfragewerkzeug (ähnlich wie Mentimeter) speziell für Live-Krimishows. Die Anwendung läuft komplett serverlos (statisches HTML/JS/CSS), wird auf **GitHub Pages** gehostet und nutzt **Supabase** als kostenlose Echtzeit-Datenbank.
 
 Deine Live-Links:
-- **Zuschauer-Voting (Voter)**: <a href="https://tobiasjschreiber.github.io/Crime-Quiz/" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/</a>
-- **Moderator-Panel (Admin)**: <a href="https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin</a>
-- **Beamer-Leinwand (Presenter)**: <a href="https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter</a>
+- **Zuschauer-Voting (Voter)**: <a href="https://doschauher.github.io/Crime-Quiz/" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/</a>
+- **Moderator-Panel (Admin)**: <a href="https://doschauher.github.io/Crime-Quiz/?role=admin" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin</a>
+- **Beamer-Leinwand (Presenter)**: <a href="https://doschauher.github.io/Crime-Quiz/?role=presenter" target="_blank" rel="noopener noreferrer">https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter</a>
 
 ### Am Handy
 
@@ -40,11 +40,11 @@ Deine Live-Links:
 ## 📖 Bedienung während der Show
 
 1. **Fragen vorbereiten (Admin)**: 
-   Öffne [https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin](https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin) und erstelle deine Fragen. Du kannst eigene Bilder hochladen (werden automatisch auf 500x500 Pixel skaliert und in der DB gespeichert).
+   Öffne [https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin](https://doschauher.github.io/Crime-Quiz/?role=admin) und erstelle deine Fragen. Du kannst eigene Bilder hochladen (werden automatisch auf 500x500 Pixel skaliert und in der DB gespeichert).
 2. **Beamer einrichten (Presenter)**: 
-   Öffne [https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter](https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter) auf dem Beamer-Bildschirm.
+   Öffne [https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter](https://doschauher.github.io/Crime-Quiz/?role=presenter) auf dem Beamer-Bildschirm.
 3. **Abstimmen (Voter)**: 
-   Die Zuschauer scannen den QR-Code auf der Leinwand und gelangen auf [https://tobiasjschreiber.github.io/Crime-Quiz/](https://tobiasjschreiber.github.io/Crime-Quiz/).
+   Die Zuschauer scannen den QR-Code auf der Leinwand und gelangen auf [https://tobiasjschreiber.github.io/Crime-Quiz/](https://doschauher.github.io/Crime-Quiz/).
 4. **Das Spiel leiten**:
    Aktiviere die Fragen nacheinander im Admin-Panel und schalte die Ergebnisse über **Ergebnisse anzeigen** live frei.
 
