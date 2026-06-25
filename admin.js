@@ -309,7 +309,8 @@ async function resetActiveVotes() {
             .from('quiz_state')
             .update({ 
                 active_question_id: adminState.active_question_id,
-                show_results: false
+                show_results: false,
+                updated_at: new Date().toISOString()
             })
             .eq('id', 1);
 
@@ -348,7 +349,8 @@ async function resetAllVotes() {
             .from('quiz_state')
             .update({ 
                 active_question_id: adminState.active_question_id,
-                show_results: false
+                show_results: false,
+                updated_at: new Date().toISOString()
             })
             .eq('id', 1);
 
