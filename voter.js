@@ -130,6 +130,7 @@ async function handleVoterStateChange() {
         voterActiveQuestion = null;
         showVoterLayout('waiting');
     }
+    updateVoterTimer();
 }
 
 // Render option buttons with silhouettes
@@ -144,7 +145,8 @@ function renderVoterQuestion() {
         confirmBtn.disabled = true;
     }
 
-    document.getElementById('voter-question-text').textContent = voterActiveQuestion.text;
+    const parsed = parseQuestionText(voterActiveQuestion.text);
+    document.getElementById('voter-question-text').textContent = parsed.text;
     const list = document.getElementById('voter-options-list');
     list.classList.remove('voting-in-progress', 'has-selection');
     list.innerHTML = '';
@@ -341,4 +343,60 @@ function showVoterLayout(view) {
     } else if (view === 'closed') {
         document.getElementById('voter-closed').classList.remove('hidden');
     }
+}
+
+// ==========================================================================
+// VOTER COUNTDOWN TIMER LOGIC
+// ==========================================================================
+let voterTimerInterval = null;
+
+function updateVoterTimer() {
+    if (voterTimerInterval) {
+        clearInterval(voterTimerInterval);
+        voterTimerInterval = null;
+    }
+
+    const stopwatchEl = document.getElementById('voter-stopwatch');
+    
+    if (!voterActiveQuestion || !voterState.active_question_id || voterState.show_results) {
+        if (stopwatchEl) stopwatchEl.classList.add('hidden');
+        return;
+    }
+
+    const parsed = parseQuestionText(voterActiveQuestion.text);
+    const totalTimer = parsed.timer;
+
+    if (totalTimer <= 0) {
+        if (stopwatchEl) stopwatchEl.classList.add('hidden');
+        return;
+    }
+
+    // Calculate elapsed time from voterState.updated_at
+    const startMs = voterState.updated_at ? new Date(voterState.updated_at).getTime() : Date.now();
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+    let remainingSeconds = totalTimer - elapsedSeconds;
+
+    if (remainingSeconds <= 0) {
+        if (stopwatchEl) stopwatchEl.classList.add('hidden');
+        return;
+    }
+
+    // Show stopwatch
+    if (stopwatchEl) stopwatchEl.classList.remove('hidden');
+
+    const updateUI = () => {
+        if (remainingSeconds <= 0) {
+            clearInterval(voterTimerInterval);
+            voterTimerInterval = null;
+            if (stopwatchEl) stopwatchEl.classList.add('hidden');
+            return;
+        }
+        
+        const fraction = remainingSeconds / totalTimer;
+        updateStopwatch(stopwatchEl, fraction, remainingSeconds);
+        remainingSeconds--;
+    };
+
+    updateUI(); // run immediately
+    voterTimerInterval = setInterval(updateUI, 1000);
 }

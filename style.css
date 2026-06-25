@@ -2681,3 +2681,58 @@ select:focus-visible {
         font-size: 1.3rem;
     }
 }
+
+/* ==========================================================================
+   STOPWATCH / PIE-CHART TIMER WIDGETS
+   ========================================================================== */
+.stopwatch-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid var(--color-dark);
+    border-radius: 50%;
+    background-color: var(--color-cream);
+    box-shadow: var(--retro-shadow);
+    flex-shrink: 0;
+    margin-right: 1.5rem;
+}
+
+.stopwatch-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.stopwatch-text {
+    position: relative;
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    color: var(--color-dark);
+    z-index: 10;
+    text-shadow: 1px 1px 0px var(--color-cream);
+}
+
+/* Small stopwatch for mobile voter view */
+.stopwatch-container.stopwatch-small {
+    width: 50px;
+    height: 50px;
+    border-width: 2px;
+    box-shadow: var(--retro-shadow-small);
+    margin-right: 0;
+}
+
+.stopwatch-container.stopwatch-small .stopwatch-text {
+    font-size: 1.2rem;
+}
+
+/* Specific alignments inside voting-status-container */
+.voting-status-container {
+    display: flex;
+    align-items: center;
+}
+

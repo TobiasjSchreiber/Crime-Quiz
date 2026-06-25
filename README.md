@@ -40,11 +40,11 @@ Deine Live-Links:
 ## 📖 Bedienung während der Show
 
 1. **Fragen vorbereiten (Admin)**: 
-   Öffne [https://tobiasjschreiber.github.io/Crime-Quiz/?role=admin](https://doschauher.github.io/Crime-Quiz/?role=admin) und erstelle deine Fragen. Du kannst eigene Bilder hochladen (werden automatisch auf 500x500 Pixel skaliert und in der DB gespeichert).
+   Öffne [https://doschauher.github.io/Crime-Quiz/?role=admin](https://doschauher.github.io/Crime-Quiz/?role=admin) und erstelle deine Fragen. Du kannst eigene Bilder hochladen (werden automatisch auf 500x500 Pixel skaliert und in der DB gespeichert).
 2. **Beamer einrichten (Presenter)**: 
-   Öffne [https://tobiasjschreiber.github.io/Crime-Quiz/?role=presenter](https://doschauher.github.io/Crime-Quiz/?role=presenter) auf dem Beamer-Bildschirm.
+   Öffne [https://doschauher.github.io/Crime-Quiz/?role=presenter](https://doschauher.github.io/Crime-Quiz/?role=presenter) auf dem Beamer-Bildschirm.
 3. **Abstimmen (Voter)**: 
-   Die Zuschauer scannen den QR-Code auf der Leinwand und gelangen auf [https://tobiasjschreiber.github.io/Crime-Quiz/](https://doschauher.github.io/Crime-Quiz/).
+   Die Zuschauer scannen den QR-Code auf der Leinwand und gelangen auf [https://doschauher.github.io/Crime-Quiz/](https://doschauher.github.io/Crime-Quiz/).
 4. **Das Spiel leiten**:
    Aktiviere die Fragen nacheinander im Admin-Panel und schalte die Ergebnisse über **Ergebnisse anzeigen** live frei.
 

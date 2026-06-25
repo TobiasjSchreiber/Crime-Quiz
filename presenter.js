@@ -111,7 +111,8 @@ async function handleStateChange() {
             winnerShownForQuestion = null; // Reset winner show state for new question
             isTransitioning = false;
             needsVoteUpdate = false;
-            document.getElementById('presenter-question-text').textContent = currentQuestion.text;
+            const parsed = parseQuestionText(currentQuestion.text);
+            document.getElementById('presenter-question-text').textContent = parsed.text;
             
             // Render large suspects for the voting phase
             renderVotingPhaseSuspects();
@@ -143,6 +144,7 @@ async function handleStateChange() {
             
             // Load and render votes
             await loadVotes();
+            updatePresenterTimer();
         } catch (err) {
             console.error('Fehler beim Laden der aktiven Frage:', err);
         }
@@ -399,6 +401,7 @@ function updateResultsVisibility() {
             winnerContainer.innerHTML = '';
         }
     }
+    updatePresenterTimer();
 }
 
 // FLIP animation to transition suspect cards from grid to chart
@@ -795,4 +798,66 @@ function animateTransition(fromEl, toEl, animationType) {
 
     fromEl.addEventListener('animationend', triggerNext);
     setTimeout(triggerNext, 500); // safety fallback for out animation
+}
+
+// ==========================================================================
+// PRESENTER COUNTDOWN TIMER LOGIC
+// ==========================================================================
+let presenterTimerInterval = null;
+
+function updatePresenterTimer() {
+    if (presenterTimerInterval) {
+        clearInterval(presenterTimerInterval);
+        presenterTimerInterval = null;
+    }
+
+    const stopwatchEl = document.getElementById('presenter-stopwatch');
+    const detectiveIcon = document.getElementById('presenter-detective-icon');
+    
+    if (!currentQuestion || !presenterState.active_question_id || presenterState.show_results) {
+        if (stopwatchEl) stopwatchEl.classList.add('hidden');
+        if (detectiveIcon) detectiveIcon.classList.remove('hidden');
+        return;
+    }
+
+    const parsed = parseQuestionText(currentQuestion.text);
+    const totalTimer = parsed.timer;
+
+    if (totalTimer <= 0) {
+        if (stopwatchEl) stopwatchEl.classList.add('hidden');
+        if (detectiveIcon) detectiveIcon.classList.remove('hidden');
+        return;
+    }
+
+    // Calculate elapsed time from presenterState.updated_at
+    const startMs = presenterState.updated_at ? new Date(presenterState.updated_at).getTime() : Date.now();
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startMs) / 1000));
+    let remainingSeconds = totalTimer - elapsedSeconds;
+
+    if (remainingSeconds <= 0) {
+        if (stopwatchEl) stopwatchEl.classList.add('hidden');
+        if (detectiveIcon) detectiveIcon.classList.remove('hidden');
+        return;
+    }
+
+    // Show stopwatch, hide detective icon
+    if (stopwatchEl) stopwatchEl.classList.remove('hidden');
+    if (detectiveIcon) detectiveIcon.classList.add('hidden');
+
+    const updateUI = () => {
+        if (remainingSeconds <= 0) {
+            clearInterval(presenterTimerInterval);
+            presenterTimerInterval = null;
+            if (stopwatchEl) stopwatchEl.classList.add('hidden');
+            if (detectiveIcon) detectiveIcon.classList.remove('hidden');
+            return;
+        }
+        
+        const fraction = remainingSeconds / totalTimer;
+        updateStopwatch(stopwatchEl, fraction, remainingSeconds);
+        remainingSeconds--;
+    };
+
+    updateUI(); // run immediately
+    presenterTimerInterval = setInterval(updateUI, 1000);
 }

@@ -380,3 +380,69 @@ function showView(viewName) {
         document.getElementById('admin-view').classList.remove('hidden');
     }
 }
+
+// ==========================================================================
+// COUNTDOWN TIMER & HELPERS FOR STOPWATCH WITH PIE CHART
+// ==========================================================================
+
+function parseQuestionText(rawText) {
+    if (!rawText) return { text: '', timer: 0 };
+    const parts = rawText.split('|timer:');
+    if (parts.length > 1) {
+        return {
+            text: parts[0],
+            timer: parseInt(parts[1], 10) || 0
+        };
+    }
+    return { text: rawText, timer: 0 };
+}
+
+function formatQuestionText(text, timer) {
+    if (timer && timer > 0) {
+        return `${text}|timer:${timer}`;
+    }
+    return text;
+}
+
+function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+    const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+    return {
+        x: centerX + (radius * Math.cos(angleInRadians)),
+        y: centerY + (radius * Math.sin(angleInRadians))
+    };
+}
+
+function getPiePath(x, y, radius, startAngle, endAngle) {
+    const start = polarToCartesian(x, y, radius, endAngle);
+    const end = polarToCartesian(x, y, radius, startAngle);
+    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    const d = [
+        "M", x, y,
+        "L", start.x, start.y,
+        "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y,
+        "Z"
+    ].join(" ");
+    return d;
+}
+
+function updateStopwatch(element, fraction, secondsLeft) {
+    if (!element) return;
+    const piePath = element.querySelector('.stopwatch-pie');
+    const textEl = element.querySelector('.stopwatch-text');
+    
+    if (textEl) {
+        textEl.textContent = secondsLeft;
+    }
+    
+    if (piePath) {
+        if (fraction <= 0) {
+            piePath.setAttribute('d', '');
+        } else if (fraction >= 0.999) {
+            piePath.setAttribute('d', getPiePath(50, 50, 42, 0, 359.9));
+        } else {
+            const endAngle = fraction * 360;
+            piePath.setAttribute('d', getPiePath(50, 50, 42, 0, endAngle));
+        }
+    }
+}
+

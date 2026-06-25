@@ -92,7 +92,16 @@
 
             <!-- Question State -->
             <div id="voter-question-container" class="hidden">
-                <h2 id="voter-question-text" class="question-title">Wer ist der Mörder?</h2>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; width: 100%;">
+                    <h2 id="voter-question-text" class="question-title" style="margin: 0; flex-grow: 1;">Wer ist der Mörder?</h2>
+                    <div id="voter-stopwatch" class="stopwatch-container stopwatch-small hidden">
+                        <svg class="stopwatch-svg" viewBox="0 0 100 100">
+                            <circle cx="50" cy="50" r="45" stroke="var(--color-dark)" stroke-width="5" fill="var(--color-cream)" />
+                            <path class="stopwatch-pie" d="" fill="var(--color-red)" stroke="var(--color-dark)" stroke-width="1.5" />
+                        </svg>
+                        <div class="stopwatch-text">0</div>
+                    </div>
+                </div>
                 <div id="voter-options-list" class="voter-options-grid-polaroid">
                     <!-- Dynamic option buttons inserted here -->
                 </div>
@@ -174,7 +183,14 @@
                     <!-- Voting Phase (Large Suspects Grid) -->
                     <div id="presenter-voting-phase" class="voting-phase-container">
                         <div class="voting-status-container">
-                            <svg class="status-detective-svg animated-shiver" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <div id="presenter-stopwatch" class="stopwatch-container hidden">
+                                <svg class="stopwatch-svg" viewBox="0 0 100 100">
+                                    <circle cx="50" cy="50" r="45" stroke="var(--color-dark)" stroke-width="5" fill="var(--color-cream)" />
+                                    <path class="stopwatch-pie" d="" fill="var(--color-red)" stroke="var(--color-dark)" stroke-width="1.5" />
+                                </svg>
+                                <div class="stopwatch-text">0</div>
+                            </div>
+                            <svg id="presenter-detective-icon" class="status-detective-svg animated-shiver" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
                                 <line x1="65" y1="65" x2="90" y2="90" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>
                                 <circle cx="45" cy="45" r="30" fill="none" stroke="currentColor" stroke-width="8"/>
                                 <path d="M25 35 A 20 20 0 0 1 55 20" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
@@ -285,6 +301,11 @@
                         <div class="form-group">
                             <label for="question-text-input">Frage/Titel</label>
                             <input type="text" id="question-text-input" placeholder="z.B. Wer ist der Hauptverdächtige?" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="question-timer-input">Timer (Sekunden, 0 = kein Timer)</label>
+                            <input type="number" id="question-timer-input" min="0" max="300" placeholder="z.B. 30" value="0">
                         </div>
 
                         <div class="form-group">

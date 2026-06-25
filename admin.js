@@ -131,9 +131,10 @@ function updateAdminStateUI() {
 
     // Update active question display
     if (activeQ) {
+        const parsed = parseQuestionText(activeQ.text);
         infoText.innerHTML = `
             <div class="dossier-stamp">AKTE OFFEN</div>
-            <div class="dossier-question">${activeQ.text}</div>
+            <div class="dossier-question">${parsed.text}</div>
         `;
         if (pulseDot) {
             pulseDot.style.backgroundColor = '#4CAF50';
@@ -211,9 +212,12 @@ function renderAdminQuestions() {
             `;
         }).join('');
         
+        const parsed = parseQuestionText(q.text);
+        const timerBadge = parsed.timer > 0 ? ` <span class="badge" style="background-color: var(--color-red); color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; font-family: var(--font-typewriter);">⏱ ${parsed.timer}s</span>` : '';
+
         card.innerHTML = `
             <div class="q-admin-details">
-                <div class="q-admin-title">${index + 1}. ${q.text}</div>
+                <div class="q-admin-title">${index + 1}. ${parsed.text}${timerBadge}</div>
                 <div class="q-admin-meta" style="margin-bottom: 0.2rem;">
                     Optionen: ${q.options.length} | Stimmen gesamt: <strong>${voteCount}</strong>
                 </div>
@@ -247,7 +251,8 @@ async function toggleActiveQuestion(questionId) {
             .from('quiz_state')
             .update({ 
                 active_question_id: targetId,
-                show_results: false // Hide results by default
+                show_results: false, // Hide results by default
+                updated_at: new Date().toISOString()
             })
             .eq('id', 1);
 
@@ -462,6 +467,7 @@ function openEditQuestionModal(questionId) {
     const editIdInput = document.getElementById('edit-question-id');
     const questionTextInput = document.getElementById('question-text-input');
     const optionsContainer = document.getElementById('modal-options-container');
+    const timerInput = document.getElementById('question-timer-input');
 
     optionsContainer.innerHTML = '';
     modal.classList.remove('hidden');
@@ -471,7 +477,12 @@ function openEditQuestionModal(questionId) {
         const q = adminQuestions.find(item => item.id === questionId);
         modalTitle.textContent = 'Frage bearbeiten';
         editIdInput.value = q.id;
-        questionTextInput.value = q.text;
+        
+        const parsed = parseQuestionText(q.text);
+        questionTextInput.value = parsed.text;
+        if (timerInput) {
+            timerInput.value = parsed.timer;
+        }
         
         q.options.forEach((opt, idx) => {
             const silhouette = q.silhouettes && q.silhouettes[idx] ? q.silhouettes[idx] : 'question';
@@ -482,6 +493,9 @@ function openEditQuestionModal(questionId) {
         modalTitle.textContent = 'Neue Frage erstellen';
         editIdInput.value = '';
         questionTextInput.value = '';
+        if (timerInput) {
+            timerInput.value = '0';
+        }
         
         // Add two default empty options
         addOptionInputField('', 'question');
@@ -574,7 +588,11 @@ async function handleQuestionFormSubmit(e) {
         return;
     }
 
-    const payload = { text, options, silhouettes };
+    const timerInput = document.getElementById('question-timer-input');
+    const timerVal = timerInput ? (parseInt(timerInput.value, 10) || 0) : 0;
+    const textFormatted = formatQuestionText(text, timerVal);
+
+    const payload = { text: textFormatted, options, silhouettes };
 
     try {
         if (id) {
