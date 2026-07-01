@@ -1802,9 +1802,8 @@ body {
     margin-top: 10px;
     color: var(--color-dark);
     text-align: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
     width: 100%;
     font-weight: bold;
     text-transform: uppercase;
