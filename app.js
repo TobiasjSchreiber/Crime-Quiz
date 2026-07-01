@@ -335,23 +335,75 @@ async function routeToRole() {
             if (promptPassword) {
                 localStorage.setItem('adminPassword', promptPassword);
                 password = promptPassword;
-                
-                // Re-initialize Supabase client with the entered password header
-                const sbUrl = CONFIG.supabaseUrl || localStorage.getItem('supabaseUrl');
-                const sbKey = CONFIG.supabaseKey || localStorage.getItem('supabaseKey');
-                db = supabase.createClient(sbUrl, sbKey, {
-                    global: {
-                        headers: {
-                            'x-admin-password': password
-                        }
-                    }
-                });
             } else {
                 currentRole = 'voter'; // Fallback
                 await routeToRole();
                 return;
             }
         }
+
+        // Immer den Supabase-Client mit dem Passwort-Header neu initialisieren,
+        // auch wenn das Passwort aus dem localStorage kam.
+        if (password) {
+            const sbUrl = CONFIG.supabaseUrl || localStorage.getItem('supabaseUrl');
+            const sbKey = CONFIG.supabaseKey || localStorage.getItem('supabaseKey');
+            db = supabase.createClient(sbUrl, sbKey, {
+                global: {
+                    headers: {
+                        'x-admin-password': password
+                    }
+                }
+            });
+        }
+
+        if (password) {
+            try {
+                // Check if password matches in DB
+                const { data, error } = await db
+                    .from('quiz_settings')
+                    .select('admin_password')
+                    .eq('id', 1)
+                    .maybeSingle();
+
+                if (error) {
+                    console.error("DB Error checking password:", error);
+                    localStorage.removeItem('adminPassword');
+                    await showCustomAlert('Datenbank-Fehler! (Tabelle quiz_settings fehlt oder Zugriff verweigert)');
+                    currentRole = 'voter'; // Fallback
+                    await routeToRole();
+                    return;
+                }
+
+                if (data && data.admin_password && data.admin_password !== password) {
+                    localStorage.removeItem('adminPassword');
+                    await showCustomAlert('Falsches Admin-Passwort!');
+                    currentRole = 'voter'; // Fallback
+                    await routeToRole();
+                    return;
+                }
+
+                // If no row is returned, it could be empty OR RLS blocked us due to wrong password.
+                if (!data) {
+                    // Try to insert the password. If it fails with a unique constraint or RLS violation,
+                    // it means the row already exists and our password was wrong.
+                    const { error: insertError } = await db
+                        .from('quiz_settings')
+                        .insert([{ id: 1, admin_password: password }]);
+                    
+                    if (insertError) {
+                        console.error("Insert error:", insertError);
+                        localStorage.removeItem('adminPassword');
+                        await showCustomAlert('Falsches Admin-Passwort!');
+                        currentRole = 'voter'; // Fallback
+                        await routeToRole();
+                        return;
+                    }
+                }
+            } catch (e) {
+                console.error('Fehler bei der Passwortprüfung:', e);
+            }
+        }
+
         showView('admin');
         if (typeof initAdmin === 'function') initAdmin();
     } else if (currentRole === 'presenter') {
